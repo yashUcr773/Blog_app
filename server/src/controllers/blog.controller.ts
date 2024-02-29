@@ -27,17 +27,23 @@ export const getAllBlogs = async (c: Context) => {
 export const addBlog = async (c: Context) => {
     try {
 
-        const { title, content } = await c.req.json();
+        const { title, content, cover, summary, published } = await c.req.json();
         const userInfo = c.get('userInfo')
+
+        let updatedObj: any = { authorId: userInfo.userId }
+        if (title !== undefined) updatedObj.title = title
+        if (cover !== undefined) updatedObj.cover = cover
+        if (summary !== undefined) updatedObj.summary = summary
+        if (content !== undefined) updatedObj.content = content
+        if (published !== undefined) updatedObj.published = published
+
 
         const prisma = new PrismaClient({
             datasourceUrl: c.env?.DATABASE_URL,
         }).$extends(withAccelerate());
 
         const blog = await prisma.post.create({
-            data: {
-                title, content, authorId: userInfo.userId
-            }
+            data: updatedObj
         });
 
         c.status(200)
@@ -56,10 +62,12 @@ export const addBlog = async (c: Context) => {
 export const updateBlog = async (c: Context) => {
     try {
 
-        const { title, content, blogId, published } = await c.req.json();
+        const { title, content, cover, summary, published, blogId } = await c.req.json();
 
         let updatedObj: any = {}
-        if (title !==undefined) updatedObj.title = title
+        if (title !== undefined) updatedObj.title = title
+        if (cover !== undefined) updatedObj.cover = cover
+        if (summary !== undefined) updatedObj.summary = summary
         if (content !== undefined) updatedObj.content = content
         if (published !== undefined) updatedObj.published = published
 
