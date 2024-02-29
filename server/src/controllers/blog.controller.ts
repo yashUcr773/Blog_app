@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client/edge'
 import { withAccelerate } from '@prisma/extension-accelerate'
 import { Context } from "hono";
+import { BLOG_CREATE_VALIDATION, BLOG_UPDATE_VALIDATION } from '../validations/blog.validation';
 
 export const getAllBlogs = async (c: Context) => {
     try {
@@ -9,7 +10,7 @@ export const getAllBlogs = async (c: Context) => {
         }).$extends(withAccelerate());
 
         // check for duplicate emails in the db
-        const blogs = await prisma.post.findMany({ include: { author: { select: { name: true, email: true } } } });
+        const blogs = await prisma.post.findMany({ include: { author: { select: { username: true, email: true } } } });
 
         c.status(200)
         return c.json({
@@ -29,6 +30,19 @@ export const addBlog = async (c: Context) => {
 
         const { title, content, cover, summary, published } = await c.req.json();
         const userInfo = c.get('userInfo')
+
+        const { success, error }: any = BLOG_CREATE_VALIDATION.safeParse({
+            title, summary, content, cover, published
+        })
+
+        if (!success) {
+            c.status(400)
+            return c.json({
+                message: "All Fiends are required.",
+                success: false,
+                error: error.issues,
+            });
+        }
 
         let updatedObj: any = { authorId: userInfo.userId }
         if (title !== undefined) updatedObj.title = title
@@ -63,6 +77,19 @@ export const updateBlog = async (c: Context) => {
     try {
 
         const { title, content, cover, summary, published, blogId } = await c.req.json();
+
+        const { success, error }: any = BLOG_UPDATE_VALIDATION.safeParse({
+            title, summary, content, cover, published
+        })
+
+        if (!success) {
+            c.status(400)
+            return c.json({
+                message: "Atleast 1 field is required.",
+                success: false,
+                error: error.issues,
+            });
+        }
 
         let updatedObj: any = {}
         if (title !== undefined) updatedObj.title = title
@@ -107,7 +134,7 @@ export const getBlogById = async (c: Context) => {
             where: {
                 id: blogId
             },
-            include: { author: { select: { name: true, email: true } } }
+            include: { author: { select: { username: true, email: true } } }
         },);
 
         c.status(200)

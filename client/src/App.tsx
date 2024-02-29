@@ -1,9 +1,16 @@
+import { BrowserRouter } from 'react-router-dom'
 import './App.css'
+import { RecoilRoot } from 'recoil'
+import { Main } from './pages/Main'
 
 export default function App() {
     return (
-      <h1 className="text-3xl font-bold underline">
-        Hello world!
-      </h1>
+        <>
+            <BrowserRouter>
+                <RecoilRoot>
+                    <Main></Main>
+                </RecoilRoot>
+            </BrowserRouter>
+        </>
     )
-  }
+}

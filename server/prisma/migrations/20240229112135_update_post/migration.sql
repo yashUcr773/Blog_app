@@ -1,4 +1,0 @@
--- AlterTable
-ALTER TABLE "Post" ADD COLUMN     "cover" TEXT NOT NULL DEFAULT '',
-ADD COLUMN     "summary" TEXT NOT NULL DEFAULT '',
-ALTER COLUMN "content" SET DEFAULT '';

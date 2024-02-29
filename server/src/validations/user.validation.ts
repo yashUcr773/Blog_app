@@ -21,7 +21,7 @@ const passwordSchema = zod
     );
 
 export const USER_SIGNUP_VALIDATOR = zod.object({
-    name: zod.string().min(4).max(24),
+    username: zod.string().min(4).max(24),
     email: zod.string().min(4).max(64).email(),
     password: passwordSchema,
 });

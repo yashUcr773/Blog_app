@@ -9,14 +9,15 @@ import { nanoid } from 'nanoid';
 
 interface TokensInterface {
     userId: string,
-    email: string
+    email: string,
+    username: string
 }
 
 export const handleSignup = async (c: Context) => {
     try {
-        const { email, password, name } = await c.req.json();
+        const { email, password, username } = await c.req.json();
         const { success, error }: any = USER_SIGNUP_VALIDATOR.safeParse({
-            email, password, name
+            email, password, username
         });
 
         if (!success) {
@@ -35,20 +36,27 @@ export const handleSignup = async (c: Context) => {
         // check for duplicate emails in the db
         const duplicate = await prisma.user.findFirst({
             where: {
-                email: { contains: email },
-            }
+                OR: [
+                    {
+                        email: { contains: email },
+                    },
+                    {
+                        username: { contains: username },
+                    },
+                ],
+            },
         });
 
         if (duplicate) {
             c.status(409)
-            return c.json({ success: false, message: "Email exists." }); //Conflict
+            return c.json({ success: false, message: "Email or Username Taken." }); //Conflict
         }
 
         //encrypt the password
         const hashedPassword = _encodePassword(password)
         const newUser = await prisma.user.create({
             data: {
-                email, name, password: hashedPassword, refreshToken: "",
+                email, username, password: hashedPassword, refreshToken: "",
             }
         });
 
@@ -63,6 +71,7 @@ export const handleSignup = async (c: Context) => {
         const [accessToken, refreshToken] = await _generateTokens({
             userId: newUser.id,
             email: newUser.email,
+            username: newUser.username,
         }, ACCESS_TOKEN_SECRET,
             ACCESS_TOKEN_EXPIRY,
             REFRESH_TOKEN_SECRET,
@@ -88,7 +97,7 @@ export const handleSignup = async (c: Context) => {
             user: {
                 userId: updatedUser.id,
                 email: updatedUser.email,
-                name: updatedUser.name,
+                username: updatedUser.username,
                 accessToken: accessToken,
             },
         });
@@ -111,8 +120,8 @@ export const handleSignin = async (c: Context) => {
             password,
         });
 
-        deleteCookie(c, "jwt");
         if (!success) {
+            deleteCookie(c, "jwt");
             c.status(400)
             return c.json({
                 message: "Email and password are required.",
@@ -130,7 +139,14 @@ export const handleSignin = async (c: Context) => {
         // check if user exists in db
         const foundUser = await prisma.user.findFirst({
             where: {
-                email: { contains: email },
+                OR: [
+                    {
+                        email: { contains: email },
+                    },
+                    {
+                        username: { contains: email },
+                    },
+                ]
             }
         });
 
@@ -149,7 +165,7 @@ export const handleSignin = async (c: Context) => {
             deleteCookie(c, "jwt");
             return c.json({
                 success: false,
-                message: "Email or password incorrect.",
+                message: "Email/Username or password incorrect.",
             });
         }
 
@@ -164,6 +180,7 @@ export const handleSignin = async (c: Context) => {
         const [accessToken, refreshToken] = await _generateTokens({
             userId: foundUser?.id || "",
             email: foundUser?.email || "",
+            username: foundUser?.username || "",
         }, ACCESS_TOKEN_SECRET,
             ACCESS_TOKEN_EXPIRY,
             REFRESH_TOKEN_SECRET,
@@ -188,7 +205,7 @@ export const handleSignin = async (c: Context) => {
             user: {
                 userId: updatedUser.id,
                 email: updatedUser.email,
-                name: updatedUser.name,
+                username: updatedUser.username,
                 accessToken: accessToken,
             },
         });
@@ -305,9 +322,10 @@ export const handleRefreshToken = async (c: Context) => {
         }
 
         // generate new tokens
-        const [accessToken, newRefreshToken] = await _generateTokens({
+        const [newAccessToken, newRefreshToken] = await _generateTokens({
             userId: foundUser.id,
             email: foundUser.email,
+            username: foundUser.username,
         }, ACCESS_TOKEN_SECRET,
             ACCESS_TOKEN_EXPIRY,
             REFRESH_TOKEN_SECRET,
@@ -317,10 +335,10 @@ export const handleRefreshToken = async (c: Context) => {
         return c.json({
             success: true,
             message: "Token Refreshed",
-            accessToken,
+            newAccessToken,
             user: sendUserData && {
                 userId: foundUser.id,
-                name: foundUser.name,
+                username: foundUser.username,
                 email: foundUser.email,
             },
         });
@@ -334,12 +352,13 @@ export const handleRefreshToken = async (c: Context) => {
     }
 };
 
-async function _generateTokens({ userId, email }: TokensInterface, ACCESS_TOKEN_SECRET: string, ACCESS_TOKEN_EXPIRY: string, REFRESH_TOKEN_SECRET: string, REFRESH_TOKEN_EXPIRY: string) {
+async function _generateTokens({ userId, email, username }: TokensInterface, ACCESS_TOKEN_SECRET: string, ACCESS_TOKEN_EXPIRY: string, REFRESH_TOKEN_SECRET: string, REFRESH_TOKEN_EXPIRY: string) {
     const accessToken = await sign(
         {
             userInfo: {
                 userId,
                 email,
+                username
             },
             exp: (Date.now() / 1000) + +ACCESS_TOKEN_EXPIRY,
             iat: (Date.now() / 1000)
@@ -352,6 +371,7 @@ async function _generateTokens({ userId, email }: TokensInterface, ACCESS_TOKEN_
             userInfo: {
                 userId,
                 email,
+                username
             },
             exp: (Date.now() / 1000) + +REFRESH_TOKEN_EXPIRY,
             iat: (Date.now() / 1000)
