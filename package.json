@@ -1,0 +1,28 @@
+{
+    "name": "blog_app",
+    "version": "1.0.0",
+    "description": "Auth with JWT\r Signin\r Signup\r Create BLog\r Edit BLog\r View Blog",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/yashUcr773/Blog_app.git"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/yashUcr773/Blog_app/issues"
+    },
+    "homepage": "https://github.com/yashUcr773/Blog_app#readme",
+    "dependencies": {
+        "husky": "^9.0.11"
+    },
+    "husky": {
+        "hooks": {
+            "pre-commit": "cd /server npm run deploy"
+        }
+    }
+}
