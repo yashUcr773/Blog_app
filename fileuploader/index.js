@@ -1,0 +1,48 @@
+require("dotenv").config();
+const express = require("express");
+const app = express();
+const port = process.env.PORT || 3000;
+const AWS = require("aws-sdk");
+const cors = require("cors");
+const multer = require("multer");
+const multerS3 = require("multer-s3");
+const { v4: uuidv4 } = require("uuid");
+const corsOptions = require("./config/corsOptions.config");
+
+// Configure AWS SDK with your credentials
+AWS.config.update({
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_ACCESS_SECRET,
+    region: process.env.AWS_REGION,
+});
+
+const s3 = new AWS.S3();
+
+const upload = multer({
+    storage: multerS3({
+        s3: s3,
+        bucket: process.env.AWS_BUCKET,
+        metadata: function (req, file, cb) {
+            cb(null, { fieldName: file.fieldname });
+        },
+        key: function (req, file, cb) {
+            const extensionSplits = file.originalname.split(".");
+            const ext = extensionSplits[extensionSplits.length - 1];
+            cb(null, `${uuidv4(24)}.${ext}`);
+        },
+    }),
+});
+
+app.post("/upload", cors(corsOptions), upload.single("cover"), (req, res) => {
+    const uploadedFile = req.file;
+
+    // Send response
+    res.status(200).json({
+        success: true,
+        message: "File uploaded",
+        filename: uploadedFile.key,
+    });
+});
+
+app.get("/", cors(), (req, res) => res.send("Hello World!"));
+app.listen(port, () => console.log(`Example app listening on port ${port}!`));

@@ -1,6 +1,6 @@
 import { useSetRecoilState } from "recoil";
 import { accessTokenAtom } from "../store/atoms/authAtom";
-import { userAtom } from "../store/atoms/user";
+import { userAtom } from "../store/atoms/userAtom";
 import { defaultUserInterface } from "../../config/types";
 
 interface currentSessionProps {

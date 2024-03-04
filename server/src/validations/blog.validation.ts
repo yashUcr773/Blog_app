@@ -4,15 +4,16 @@ export const BLOG_CREATE_VALIDATION = zod.object({
     title: zod.string(),
     summary: zod.string(),
     content: zod.string(),
-    cover: zod.string(),
+    category: zod.string(),
     published: zod.boolean().optional(),
 });
 
 export const BLOG_UPDATE_VALIDATION = zod.object({
-    title: zod.string().optional(),
-    summary: zod.string().optional(),
-    content: zod.string().optional(),
-    cover: zod.string().optional(),
-    published: zod.boolean().optional(),
+    blogId: zod.string(),
+    title: zod.union([zod.string(), zod.undefined()]),
+    summary: zod.union([zod.string(), zod.undefined()]),
+    content: zod.union([zod.string(), zod.undefined()]),
+    category: zod.union([zod.string(), zod.undefined()]),
+    published: zod.union([zod.boolean(), zod.undefined()]),
 });
 

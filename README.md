@@ -44,6 +44,7 @@ https://github.com/dejwid/mern-blog
 
 ## Planned Functionality
 Add comments to blogs
+Add update history
 
 ### Steps followed
 - Create App

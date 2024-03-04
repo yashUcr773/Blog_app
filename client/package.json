@@ -7,7 +7,7 @@
         "dev": "vite --host",
         "build": "tsc && vite build",
         "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-        "start:both": "concurrently \"npm run dev\" \"cd ../server && npm run dev\"",
+        "start:both": "concurrently \"npm run dev\" \"cd ../server && npm run dev\" \"cd ../fileuploader && npm run dev\"",
         "preview": "vite preview"
     },
     "dependencies": {
@@ -15,6 +15,7 @@
         "concurrently": "^8.2.2",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
+        "react-quill": "^2.0.0",
         "react-router-dom": "^6.22.2",
         "recoil": "^0.7.7"
     },

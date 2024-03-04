@@ -1,12 +1,21 @@
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { useRecoilValue } from "recoil"
 import { accessTokenAtom } from "../store/atoms/authAtom"
 import { useLogout } from "../hooks/useLogout"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import { userAtom } from "../store/atoms/userAtom"
+import { ProfilePhoto } from "./ProfilePhoto"
+import { Loader } from "./Loader"
 
 export function Header() {
 
     const accessToken = useRecoilValue(accessTokenAtom)
+    const dropdownRef = useRef(null as any);
+    const [showDropdown, setShowDropdown] = useState(false)
+    const user = useRecoilValue(userAtom)
+    const navigate = useNavigate()
+    const [showLoader, setShowLoader] = useState(false)
+
     const logout = useLogout()
     const [isDarkMode, setIsDarkMode] = useState(
         localStorage.getItem('color-theme') === 'dark' ||
@@ -24,12 +33,30 @@ export function Header() {
         }
     }, [isDarkMode]);
 
+    useEffect(() => {
+        const handleClickOutside = (event: any) => {
+            if (dropdownRef.current && !dropdownRef?.current?.contains(event.target)) {
+                setShowDropdown(false);
+            }
+        };
+        document.addEventListener('click', handleClickOutside);
+        return () => {
+            document.removeEventListener('click', handleClickOutside);
+        };
+    }, []);
+
     const toggleTheme = () => {
         setIsDarkMode((prevIsDarkMode) => !prevIsDarkMode);
     };
 
     async function handleLogout() {
-        await logout({  })
+        setShowLoader(true)
+        await logout({})
+        setShowLoader(false)
+    }
+
+    if (showLoader) {
+        return <Loader fullPage={true}></Loader>
     }
 
     return (
@@ -63,12 +90,78 @@ export function Header() {
                                         Get started</Link>
                                 </div> :
                                 <div className="flex items-center lg:order-2">
-                                    <Link to="/linkpage"
+                                    <Link to="/createBlog"
                                         className="text-gray-800 dark:text-white hover:bg-gray-200 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-4 lg:px-5 py-2 lg:py-2.5 mr-2 dark:hover:bg-gray-700 focus:outline-none dark:focus:ring-gray-800">
-                                        links</Link>
-                                    <button onClick={() => handleLogout()}
-                                        className="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-4 lg:px-5 py-2 lg:py-2.5 mr-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
-                                        Log out</button>
+                                        Create Blog</Link>
+                                    <div className="flex items-center lg:order-2">
+
+                                        <button
+                                            id="dropdownInformationButton"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setShowDropdown(p => !p);
+                                            }}
+                                            aria-expanded={showDropdown}
+                                            aria-haspopup="true"
+                                            className="relative px-4 py-2 rounded-lg flex flex-row gap-4 items-center justify-center shadow bg-gray-50 hover:bg-gray-100 dark:hover:bg-gray-600 dark:bg-gray-700"
+                                            type="button"
+                                        >
+                                            <span className="pointer-events-none">Hello, {user && user.username}</span>
+                                            <ProfilePhoto size={10}></ProfilePhoto>
+                                            <div
+                                                ref={dropdownRef}
+                                                id="dropdownInformation"
+                                                className={`absolute z-10 bg-white divide-y divide-gray-100 rounded-lg shadow w-60 dark:bg-gray-700 dark:divide-gray-600 top-0 right-0 mt-16 ${showDropdown ? 'block' : 'hidden'}`}
+                                                role="menu"
+                                            >
+                                                <div className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                                    <div className="truncate">{user?.username}</div>
+                                                    <div className="font-medium truncate">{user?.email}</div>
+                                                </div>
+
+                                                <div className="py-2">
+                                                    <a
+                                                        href="#"
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            navigate('/updateProfile');
+                                                        }}
+                                                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                                                    >
+                                                        Update Info
+                                                    </a>
+                                                    <a
+                                                        href="#"
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            navigate(`/user/${user?.id}/posts`);
+                                                        }}
+                                                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                                                    >
+                                                        My Blogs
+                                                    </a>
+                                                </div>
+
+                                                <div className="py-2">
+                                                    <a
+                                                        href="#"
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            handleLogout();
+                                                        }}
+                                                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                                                    >
+                                                        Sign out
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </button>
+
+
+
+
+
+                                    </div>
                                 </div>
                         }
                     </div>

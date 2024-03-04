@@ -5,7 +5,7 @@ import { USER_SIGNIN_VALIDATOR, USER_SIGNUP_VALIDATOR } from '../validations/use
 import { deleteCookie, getCookie, setCookie } from 'hono/cookie';
 import { tokenCookieOptions } from '../config/cookieOptions';
 import { sign, verify } from 'hono/jwt';
-import { nanoid } from 'nanoid';
+import { _decodePassword, _encodePassword } from '../utils/password.utils';
 
 interface TokensInterface {
     userId: string,
@@ -84,6 +84,12 @@ export const handleSignup = async (c: Context) => {
             },
             data: {
                 refreshToken: refreshToken,
+            },
+            select: {
+                id: true,
+                email: true,
+                username: true,
+                profilePhoto: true
             }
         });
 
@@ -94,12 +100,7 @@ export const handleSignup = async (c: Context) => {
         return c.json({
             success: true,
             message: "User Created Successfully.",
-            user: {
-                userId: updatedUser.id,
-                email: updatedUser.email,
-                username: updatedUser.username,
-                accessToken: accessToken,
-            },
+            user: ({ ...updatedUser, accessToken: accessToken })
         });
 
     } catch (err: any) {
@@ -133,8 +134,6 @@ export const handleSignin = async (c: Context) => {
         const prisma = new PrismaClient({
             datasourceUrl: c.env?.DATABASE_URL,
         }).$extends(withAccelerate());
-        console.log('prisma')
-        // console.log(prisma)
 
         // check if user exists in db
         const foundUser = await prisma.user.findFirst({
@@ -192,6 +191,12 @@ export const handleSignin = async (c: Context) => {
             },
             data: {
                 refreshToken: refreshToken,
+            },
+            select: {
+                id: true,
+                email: true,
+                username: true,
+                profilePhoto: true
             }
         });
 
@@ -202,12 +207,7 @@ export const handleSignin = async (c: Context) => {
         return c.json({
             success: true,
             message: "Login Successful",
-            user: {
-                userId: updatedUser.id,
-                email: updatedUser.email,
-                username: updatedUser.username,
-                accessToken: accessToken,
-            },
+            user: ({ ...updatedUser, accessToken: accessToken })
         });
     } catch (e) {
         console.log(e);
@@ -309,6 +309,12 @@ export const handleRefreshToken = async (c: Context) => {
         const foundUser = await prisma.user.findFirst({
             where: {
                 refreshToken: refreshToken,
+            },
+            select: {
+                id: true,
+                email: true,
+                username: true,
+                profilePhoto: true
             }
         });
 
@@ -336,11 +342,7 @@ export const handleRefreshToken = async (c: Context) => {
             success: true,
             message: "Token Refreshed",
             newAccessToken,
-            user: sendUserData && {
-                userId: foundUser.id,
-                username: foundUser.username,
-                email: foundUser.email,
-            },
+            user: sendUserData && foundUser
         });
     } catch (e) {
         console.log(e)
@@ -360,8 +362,8 @@ async function _generateTokens({ userId, email, username }: TokensInterface, ACC
                 email,
                 username
             },
-            exp: (Date.now() / 1000) + +ACCESS_TOKEN_EXPIRY,
-            iat: (Date.now() / 1000)
+            exp: (Math.round(Date.now() / 1000) - 1) + +ACCESS_TOKEN_EXPIRY,
+            iat: (Math.round(Date.now() / 1000) - 1)
         },
         ACCESS_TOKEN_SECRET,
     );
@@ -373,8 +375,8 @@ async function _generateTokens({ userId, email, username }: TokensInterface, ACC
                 email,
                 username
             },
-            exp: (Date.now() / 1000) + +REFRESH_TOKEN_EXPIRY,
-            iat: (Date.now() / 1000)
+            exp: (Math.round(Date.now() / 1000) - 1) + +REFRESH_TOKEN_EXPIRY,
+            iat: (Math.round(Date.now() / 1000) - 1)
 
         },
         REFRESH_TOKEN_SECRET,
@@ -382,18 +384,4 @@ async function _generateTokens({ userId, email, username }: TokensInterface, ACC
     );
 
     return [accessToken, refreshToken];
-}
-
-function _decodePassword(password: string) {
-    password = atob(password);
-    const length = password.length;
-    password = password.slice(length / 3, 2 * length / 3);
-    return password
-}
-
-function _encodePassword(password: string) {
-    const length = password.length;
-    const prefix = nanoid(length);
-    const suffix = nanoid(length);
-    return btoa(prefix + password + suffix);
 }

@@ -31,3 +31,9 @@ export const USER_SIGNIN_VALIDATOR = zod.object({
     password: zod.string(),
 });
 
+export const USER_UPDATE_VALIDATOR = zod.object({
+    currentPassword: zod.string().optional(),
+    newPassword: passwordSchema.optional(),
+    confirmPassword: passwordSchema.optional(),
+});
+
