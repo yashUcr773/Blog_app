@@ -34,13 +34,26 @@ const upload = multer({
 });
 
 app.post("/upload", cors(corsOptions), upload.single("cover"), (req, res) => {
-    const uploadedFile = req.file;
-
+    if (!req.file) {
+        return res.status(400).json({
+            success: false,
+            message: "No file uploaded",
+        });
+    }
     // Send response
     res.status(200).json({
         success: true,
         message: "File uploaded",
-        filename: uploadedFile.key,
+        filename: req.file.key,
+    });
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({
+        success: false,
+        message: "Internal Server Error"
     });
 });
 
