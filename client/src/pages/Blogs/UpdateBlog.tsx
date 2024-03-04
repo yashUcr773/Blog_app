@@ -72,13 +72,16 @@ export function UpdateBlog() {
         if (title !== state.blogData.title) {
             updateObj.title = title
         }
+        if (published !== state.blogData.published) {
+            updateObj.publishedStr = published
+        }
         if (summary !== state.blogData.summary) {
             updateObj.summary = summary
         }
         if (content !== state.blogData.content) {
             updateObj.content = content
         }
-        if (finalCategory !== state.blogData.category) {
+        if (finalCategory !== state.blogData.category.name) {
             updateObj.category = finalCategory
         }
         if (cover !== state.blogData.cover) {

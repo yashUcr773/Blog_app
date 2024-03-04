@@ -72,7 +72,7 @@ export function CreateBlog() {
         setNetworkCallInProgress(true)
         try {
             await customAxios.post(CONSTANTS.BLOG.POST_ADD_BLOG(), {
-                title, content, cover: cover[0], summary, published, category: finalCategory
+                title, content, cover: cover[0], summary, publishedStr: published, category: finalCategory
             }, { headers: { 'Content-Type': "multipart/form-data" } })
             navigate('/')
         } catch (err) {

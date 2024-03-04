@@ -124,7 +124,9 @@ export const addBlog = async (c: Context) => {
 export const updateBlog = async (c: Context) => {
     try {
 
-        const { title, content, cover, summary, published, category, blogId }: any = await c.req.parseBody();
+        const { title, content, cover, summary, publishedStr, category, blogId }: any = await c.req.parseBody();
+        const published = publishedStr === 'true' ? true : false
+
         const { success, error }: any = BLOG_UPDATE_VALIDATION.safeParse({
             blogId, title, summary, content, published, category
         })

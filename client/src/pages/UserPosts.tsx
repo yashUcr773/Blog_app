@@ -51,7 +51,7 @@ export function UserPosts() {
                     <address className="w-full flex flex-row items-center justify-center mb-6 not-italic">
                         <div className="w-full flex flex-row items-center justify-center mr-3 text-sm text-gray-900 dark:text-white gap-4">
                             <div className="shrink-0">
-                                <ProfilePhoto src={userData.profilePhoto} alt={userData.username} size={20}/>
+                                <ProfilePhoto src={userData.profilePhoto} alt={userData.username} size={20} />
                             </div>
                             <div className="flex flex-col gap-1">
                                 <Link to={`/user/${userData.id}/posts`} rel="author" className="text-xl cursor-pointer font-bold text-gray-900 dark:text-white underline">@{userData.username}</Link>

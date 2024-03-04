@@ -4,7 +4,8 @@
     "description": "Auth with JWT\r Signin\r Signup\r Create BLog\r Edit BLog\r View Blog",
     "main": "index.js",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "deploy-worker": "echo \"deploy\" && cd /server && npm run deploy"
     },
     "repository": {
         "type": "git",
@@ -22,7 +23,7 @@
     },
     "husky": {
         "hooks": {
-            "pre-commit": "cd /server npm run deploy"
+            "pre-commit": "npm run deploy-worker"
         }
     }
 }
