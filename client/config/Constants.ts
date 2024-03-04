@@ -3,9 +3,9 @@ import axios from "axios";
 export const CONSTANTS = {
     EMAIL_REGEX: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,64}$/,
     PWD_REGEX: /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/,
-    // APIBASEURL: "https://www.quickpost.dev",
+    APIBASEURL: "https://server.quickpost.dev",
     // APIBASEURL: "http://127.0.0.1:8787",
-    APIBASEURL: "http://localhost:8787",
+    // APIBASEURL: "http://localhost:8787",
     AUTH: {
         BASE: "/auth",
         POST_SIGNUP: function () {
