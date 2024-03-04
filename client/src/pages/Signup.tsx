@@ -7,10 +7,10 @@ import { useSetCurrentSession } from '../hooks/useSetCurrentSession';
 
 export function Signup() {
 
-    const [email, setEmail] = useState("yg3752@gmail.com")
-    const [username, setUsername] = useState("yash773")
-    const [password, setPassword] = useState("Compro@11")
-    const [confirmPWD, setConfirmPWD] = useState("Compro@11")
+    const [email, setEmail] = useState("")
+    const [username, setUsername] = useState("")
+    const [password, setPassword] = useState("")
+    const [confirmPWD, setConfirmPWD] = useState("")
 
     const [showPassword, setShowPassword] = useState(false)
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
