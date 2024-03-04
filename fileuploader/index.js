@@ -53,9 +53,12 @@ app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({
         success: false,
-        message: "Internal Server Error"
+        message: "Internal Server Error",
     });
 });
 
-app.get("/", cors(), (req, res) => res.send("Hello World!"));
+app.get("/test", cors(), (req, res) =>
+    res.send("Blog app hosted on https://quickpost.dev")
+);
+app.get("/", cors(), (req, res) => res.redirect("https://quickpost.dev"));
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));

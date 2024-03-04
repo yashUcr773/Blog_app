@@ -25,8 +25,11 @@ app.route('/api/v1/category', categoryRouter)
 
 app.use(cors())
 
+app.get('/test', (c) => {
+    return c.text("Blog app hosted on https://quickpost.dev")
+})
 app.get('/', (c) => {
-    return c.text('Hello Hono!')
+    return c.redirect("https://quickpost.dev")
 })
 
 export default app
