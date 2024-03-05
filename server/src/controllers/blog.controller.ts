@@ -78,8 +78,16 @@ export const addBlog = async (c: Context) => {
         const response = await fetch(CONSTANTS.FILE_UPLOADER_URL, {
             method: 'POST',
             body: formData,
+            headers: new Headers({
+                'authorization': (c.req.header('authorization') as string)
+            })
         });
         const uploaderData: any = await response.json()
+
+        if (uploaderData.success == false) {
+            c.status(500)
+            return c.json({ success: false, message: 'Error Uploading image' });
+        } 
 
         const prisma = new PrismaClient({
             datasourceUrl: c.env?.DATABASE_URL,
@@ -149,6 +157,9 @@ export const updateBlog = async (c: Context) => {
             const response = await fetch(CONSTANTS.FILE_UPLOADER_URL, {
                 method: 'POST',
                 body: formData,
+                headers: new Headers({
+                    'authorization': (c.req.header('authorization') as string)
+                })
             });
             const uploaderData: any = await response.json()
             updatedObj.cover = CONSTANTS.CF_BASE_URL + uploaderData.filename

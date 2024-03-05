@@ -62,12 +62,13 @@ Ensure the following environment variables are set:
     - `AWS_ACCESS_SECRET`
     - `AWS_REGION`
     - `AWS_BUCKET`
+    - `ACCESS_TOKEN_SECRET` - same value as in server
     - `ENV`
 
 - For the server (`.dev.env`) server:
   - `DATABASE_URL`
   - `DIRECT_URL`
-  - `ACCESS_TOKEN_SECRET`
+  - `ACCESS_TOKEN_SECRET` - same value as in fileuploader
   - `REFRESH_TOKEN_SECRET`
 
 For `wrangler.toml`:

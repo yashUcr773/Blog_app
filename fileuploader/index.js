@@ -8,6 +8,7 @@ const multer = require("multer");
 const multerS3 = require("multer-s3");
 const { v4: uuidv4 } = require("uuid");
 const corsOptions = require("./config/corsOptions.config");
+const jwt = require('jsonwebtoken')
 
 // Configure AWS SDK with your credentials
 AWS.config.update({
@@ -33,7 +34,36 @@ const upload = multer({
     }),
 });
 
-app.post("/upload", cors(corsOptions), upload.single("cover"), (req, res) => {
+async function verifyJWT(req, res, next) {
+    try {
+        const authHeader =
+            req.headers.authorization || req.headers.Authorization;
+
+
+        if (!authHeader?.startsWith("Bearer ")) {
+            return res.status(403).json({
+                success: false,
+                message: "Authentication Error",
+            });
+        }
+
+        const { userInfo } = await jwt.verify(
+            token,
+            process.env.ACCESS_TOKEN_SECRET
+        );
+
+
+        return next();
+    } catch (e) {
+        console.log(e);
+        return res.status(403).json({
+            success: false,
+            message: "Auth Error",
+        });
+    }
+}
+
+app.post("/upload", cors(), verifyJWT, upload.single("cover"), (req, res) => {
     if (!req.file) {
         return res.status(400).json({
             success: false,

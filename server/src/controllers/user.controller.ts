@@ -157,6 +157,9 @@ export const updateUserInfo = async (c: Context) => {
             const response = await fetch(CONSTANTS.FILE_UPLOADER_URL, {
                 method: 'POST',
                 body: formData,
+                headers: new Headers({
+                    'authorization': (c.req.header('authorization') as string)
+                })
             });
             const uploaderData: any = await response.json()
             updatedObj.profilePhoto = CONSTANTS.CF_BASE_URL + uploaderData.filename
