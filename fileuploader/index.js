@@ -47,6 +47,7 @@ async function verifyJWT(req, res, next) {
             });
         }
 
+        const token = authHeader.split(' ')[1]
         const { userInfo } = await jwt.verify(
             token,
             process.env.ACCESS_TOKEN_SECRET
