@@ -1,5 +1,9 @@
 # QuickPost
-[Demo](https://quickpost.dev)
+Demo - [quickpost.dev/](https://www.quickpost.dev/)
+
+Test Account
+- Email - demouser@mailsac.com
+- Password - Demo@user_1
 
 ## Functionality
 
