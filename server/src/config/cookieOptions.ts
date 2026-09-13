@@ -8,10 +8,13 @@ interface TokenCookieOptions {
     sameSite: 'Strict' | 'Lax' | 'None'
 }
 
-export const tokenCookieOptions: TokenCookieOptions = {
-    httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000,
-    secure: true,
-    sameSite: 'None',
-};
+export const getTokenCookieOptions = (env?: string): TokenCookieOptions => {
+    const isDevelopment = env === 'development'
 
+    return {
+        httpOnly: true,
+        maxAge: 7 * 24 * 60 * 60,
+        secure: !isDevelopment,
+        sameSite: isDevelopment ? 'Lax' : 'None',
+    };
+}

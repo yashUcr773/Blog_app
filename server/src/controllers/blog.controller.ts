@@ -75,7 +75,7 @@ export const addBlog = async (c: Context) => {
         // upload image to AWS
         const formData = new FormData();
         formData.append('cover', cover as any);
-        const response = await fetch(CONSTANTS.FILE_UPLOADER_URL, {
+        const response = await fetch(c.env?.FILE_UPLOADER_URL || CONSTANTS.FILE_UPLOADER_URL, {
             method: 'POST',
             body: formData,
             headers: new Headers({
@@ -154,7 +154,7 @@ export const updateBlog = async (c: Context) => {
             // upload image to AWS
             const formData = new FormData();
             formData.append('cover', cover as any);
-            const response = await fetch(CONSTANTS.FILE_UPLOADER_URL, {
+            const response = await fetch(c.env?.FILE_UPLOADER_URL || CONSTANTS.FILE_UPLOADER_URL, {
                 method: 'POST',
                 body: formData,
                 headers: new Headers({
@@ -308,4 +308,3 @@ export const deleteBlog = async (c: Context) => {
         return c.json({ success: false, message: err.message });
     }
 };
-

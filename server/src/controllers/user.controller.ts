@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
 import { Context } from "hono";
 import { USER_UPDATE_VALIDATOR } from "../validations/user.validation";
-import { _decodePassword, _encodePassword } from "../utils/password.utils";
+import { _encodePassword, _verifyPassword } from "../utils/password.utils";
 import { CONSTANTS } from "../config/constants";
 
 export const getUserById = async (c: Context) => {
@@ -141,7 +141,15 @@ export const updateUserInfo = async (c: Context) => {
         }).$extends(withAccelerate());
 
         const foundUser = await prisma.user.findFirst({ where: { id: userInfo.userId } })
-        if (currentPassword != null && currentPassword !== _decodePassword(foundUser?.password as string)) {
+        if (!foundUser) {
+            c.status(404)
+            return c.json({
+                message: "User not found.",
+                success: false,
+            });
+        }
+
+        if (currentPassword != null && !(await _verifyPassword(currentPassword as string, foundUser.password))) {
             c.status(400)
             return c.json({
                 message: "Password incorrect.",
@@ -150,11 +158,11 @@ export const updateUserInfo = async (c: Context) => {
         }
 
         let updatedObj: any = { updated: true }
-        if (newPassword != null) updatedObj.password = _encodePassword(newPassword as string)
+        if (newPassword != null) updatedObj.password = await _encodePassword(newPassword as string)
         if (cover != null) {
             const formData = new FormData();
             formData.append('cover', cover as any);
-            const response = await fetch(CONSTANTS.FILE_UPLOADER_URL, {
+            const response = await fetch(c.env?.FILE_UPLOADER_URL || CONSTANTS.FILE_UPLOADER_URL, {
                 method: 'POST',
                 body: formData,
                 headers: new Headers({

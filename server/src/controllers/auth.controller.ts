@@ -3,9 +3,9 @@ import { withAccelerate } from '@prisma/extension-accelerate'
 import { Context } from 'hono';
 import { USER_SIGNIN_VALIDATOR, USER_SIGNUP_VALIDATOR } from '../validations/user.validation';
 import { deleteCookie, getCookie, setCookie } from 'hono/cookie';
-import { tokenCookieOptions } from '../config/cookieOptions';
+import { getTokenCookieOptions } from '../config/cookieOptions';
 import { sign, verify } from 'hono/jwt';
-import { _decodePassword, _encodePassword } from '../utils/password.utils';
+import { _encodePassword, _passwordNeedsRehash, _verifyPassword } from '../utils/password.utils';
 
 interface TokensInterface {
     userId: string,
@@ -53,7 +53,7 @@ export const handleSignup = async (c: Context) => {
         }
 
         //encrypt the password
-        const hashedPassword = _encodePassword(password)
+        const hashedPassword = await _encodePassword(password)
         const newUser = await prisma.user.create({
             data: {
                 email, username, password: hashedPassword, refreshToken: "",
@@ -94,7 +94,7 @@ export const handleSignup = async (c: Context) => {
         });
 
         // send cookie and response
-        setCookie(c, "jwt", refreshToken, tokenCookieOptions);
+        setCookie(c, "jwt", refreshToken, getTokenCookieOptions(c.env?.ENV));
 
         c.status(200)
         return c.json({
@@ -158,10 +158,10 @@ export const handleSignin = async (c: Context) => {
             });
         }
 
-        const foundPassword = _decodePassword(foundUser.password)
-        const match = password === foundPassword
+        const match = await _verifyPassword(password, foundUser.password)
         if (!match) {
             deleteCookie(c, "jwt");
+            c.status(401)
             return c.json({
                 success: false,
                 message: "Email/Username or password incorrect.",
@@ -191,6 +191,7 @@ export const handleSignin = async (c: Context) => {
             },
             data: {
                 refreshToken: refreshToken,
+                ...(_passwordNeedsRehash(foundUser.password) ? { password: await _encodePassword(password) } : {}),
             },
             select: {
                 id: true,
@@ -202,7 +203,7 @@ export const handleSignin = async (c: Context) => {
 
 
         // send cookie and response
-        setCookie(c, "jwt", refreshToken, tokenCookieOptions);
+        setCookie(c, "jwt", refreshToken, getTokenCookieOptions(c.env?.ENV));
         c.status(200)
         return c.json({
             success: true,
@@ -336,6 +337,13 @@ export const handleRefreshToken = async (c: Context) => {
             ACCESS_TOKEN_EXPIRY,
             REFRESH_TOKEN_SECRET,
             REFRESH_TOKEN_EXPIRY);
+
+        await prisma.user.update({
+            where: { id: foundUser.id },
+            data: { refreshToken: newRefreshToken },
+        });
+
+        setCookie(c, "jwt", newRefreshToken, getTokenCookieOptions(c.env?.ENV));
 
         c.status(200)
         return c.json({

@@ -5,5 +5,7 @@ export type Bindings = {
     REFRESH_TOKEN_SECRET: string,
     ACCESS_TOKEN_EXPIRY: string,
     ACCESS_TOKEN_SECRET: string,
-    DIRECT_URL: string
+    DIRECT_URL: string,
+    FILE_UPLOADER_URL?: string,
+    ENV?: string
 }

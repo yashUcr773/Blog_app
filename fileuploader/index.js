@@ -10,29 +10,56 @@ const { v4: uuidv4 } = require("uuid");
 const corsOptions = require("./config/corsOptions.config");
 const jwt = require('jsonwebtoken')
 
-// Configure AWS SDK with your credentials
-AWS.config.update({
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_ACCESS_SECRET,
-    region: process.env.AWS_REGION,
-});
+const requiredAwsEnv = [
+    "AWS_ACCESS_KEY_ID",
+    "AWS_ACCESS_SECRET",
+    "AWS_REGION",
+    "AWS_BUCKET",
+];
+const hasAwsConfig = requiredAwsEnv.every((key) => Boolean(process.env[key]));
+let upload;
 
-const s3 = new AWS.S3();
+if (hasAwsConfig) {
+    AWS.config.update({
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_ACCESS_SECRET,
+        region: process.env.AWS_REGION,
+    });
 
-const upload = multer({
-    storage: multerS3({
-        s3: s3,
-        bucket: process.env.AWS_BUCKET,
-        metadata: function (req, file, cb) {
-            cb(null, { fieldName: file.fieldname });
-        },
-        key: function (req, file, cb) {
-            const extensionSplits = file.originalname.split(".");
-            const ext = extensionSplits[extensionSplits.length - 1];
-            cb(null, `${uuidv4(24)}.${ext}`);
-        },
-    }),
-});
+    const s3 = new AWS.S3();
+
+    upload = multer({
+        storage: multerS3({
+            s3: s3,
+            bucket: process.env.AWS_BUCKET,
+            metadata: function (req, file, cb) {
+                cb(null, { fieldName: file.fieldname });
+            },
+            key: function (req, file, cb) {
+                const extensionSplits = file.originalname.split(".");
+                const ext = extensionSplits[extensionSplits.length - 1];
+                cb(null, `${uuidv4()}.${ext}`);
+            },
+        }),
+    });
+} else {
+    console.warn(
+        `AWS upload disabled. Missing: ${requiredAwsEnv
+            .filter((key) => !process.env[key])
+            .join(", ")}`
+    );
+}
+
+function requireUploadConfig(req, res, next) {
+    if (!upload) {
+        return res.status(503).json({
+            success: false,
+            message: "File upload service is not configured.",
+        });
+    }
+
+    return next();
+}
 
 async function verifyJWT(req, res, next) {
     try {
@@ -64,7 +91,9 @@ async function verifyJWT(req, res, next) {
     }
 }
 
-app.post("/upload", cors(), verifyJWT, upload.single("cover"), (req, res) => {
+app.post("/upload", cors(corsOptions), verifyJWT, requireUploadConfig, (req, res, next) => {
+    upload.single("cover")(req, res, next);
+}, (req, res) => {
     if (!req.file) {
         return res.status(400).json({
             success: false,
@@ -88,8 +117,8 @@ app.use((err, req, res, next) => {
     });
 });
 
-app.get("/test", cors(), (req, res) =>
+app.get("/test", cors(corsOptions), (req, res) =>
     res.send("Blog app hosted on https://quickpost.dev")
 );
-app.get("/", cors(), (req, res) => res.redirect("https://quickpost.dev"));
+app.get("/", cors(corsOptions), (req, res) => res.redirect("https://quickpost.dev"));
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));

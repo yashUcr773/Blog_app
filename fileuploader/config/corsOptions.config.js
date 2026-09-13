@@ -2,6 +2,7 @@ const { allowedOrigins } = require("./allowedOrigins.config");
 const corsOptions = {
     origin: (origin, callback) => {
         if (
+            !origin ||
             allowedOrigins.indexOf(origin) !== -1 ||
             process.env.ENV == "development"
         ) {

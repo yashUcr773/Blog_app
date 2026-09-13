@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "modernize-old-repo": {
+      "source": "yashUcr773/agent-skills",
+      "sourceType": "github",
+      "skillPath": "modernize-old-repo/SKILL.md",
+      "computedHash": "0c7feabc07ddd189e6e08bdc120e553ce976d09378524ad3da9d6a5792eb4f7e"
+    }
+  }
+}

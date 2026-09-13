@@ -44,14 +44,23 @@ To run the application locally, follow these steps:
 
 1. Clone the repository.
 2. Navigate to the cloned repository.
-3. Navigate to the server directory (`cd server`).
-4. Install dependencies with `npm i`.
-5. Navigate to the client directory (`cd ../client`).
-6. Install dependencies with `npm i`.
-7. Navigate to the uploader directory (`cd ../uploader`).
-8. Install dependencies with `npm i`.
-9. Run server, uploader and client with `npm run start:both`.
-10. The server runs on `localhost:8787`, and the client runs on `localhost:5173`. The file uploader runs on `localhost:3000`.
+3. Install dependencies for every workspace:
+    ```
+    npm run install:all
+    ```
+4. Create local environment files:
+    ```
+    cp client/.env.example client/.env
+    cp server/.dev.vars.example server/.dev.vars
+    cp fileuploader/.env.example fileuploader/.env
+    ```
+5. Fill in the database and AWS values in those files.
+6. Run the client, server, and file uploader together:
+    ```
+    npm run dev
+    ```
+
+The client runs on `localhost:5173`, the Cloudflare Worker runs on `localhost:8787`, and the file uploader runs on `localhost:3000`.
 
 ## Environment Variables
 
@@ -61,7 +70,7 @@ Ensure the following environment variables are set:
   - `DATABASE_URL`
   - `DIRECT_URL`
 
-- For (`.env`) in uploader:
+- For `.env` in `fileuploader`:
     - `AWS_ACCESS_KEY_ID`
     - `AWS_ACCESS_SECRET`
     - `AWS_REGION`
@@ -69,11 +78,13 @@ Ensure the following environment variables are set:
     - `ACCESS_TOKEN_SECRET` - same value as in server
     - `ENV`
 
-- For the server (`.dev.env`) server:
+- For the server (`.dev.vars`):
   - `DATABASE_URL`
   - `DIRECT_URL`
   - `ACCESS_TOKEN_SECRET` - same value as in fileuploader
   - `REFRESH_TOKEN_SECRET`
+  - `FILE_UPLOADER_URL`
+  - `ENV`
 
 For `wrangler.toml`:
 - `ACCESS_TOKEN_EXPIRY=86400`
@@ -123,4 +134,3 @@ Follow these steps to integrate Prisma:
     ```
     npx wrangler login
     ```
-
